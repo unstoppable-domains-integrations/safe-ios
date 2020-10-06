@@ -19,130 +19,32 @@ struct TransactionDetailsView: View {
     var body: some View {
         ZStack {
             LoadableView(TransactionDetailsBodyView(model: model), reloadsOnAppOpen: false)
-
-            if App.configuration.toggles.signing && model.canSign {
-                confirmButtonView
-            }
         }
         .navigationBarTitle("Transaction Details", displayMode: .inline)
-        .background(Color.gnoWhite)
         .onAppear {
             self.trackEvent(.transactionsDetails)
         }
-    }
-
-    private var confirmButtonView: some View {
-        VStack {
-            Spacer()
-
-            Button(action: {
-                self.confirmTransaction()
-            }) {
-                Text("Confirm")
-            }
-            .buttonStyle(GNOFilledButtonStyle())
-            .padding()
-        }
-    }
-
-    private func confirmTransaction() {
-        model.sign()
     }
 }
 
+struct TransactionDetailsBodyView: Loadable {
+    @ObservedObject
+    var model: TransactionDetailsViewModel
 
-fileprivate struct TransactionDetailsBodyView: Loadable {
-    let model: TransactionDetailsViewModel
-
-    private var transactionViewModel: TransactionViewModel {
+    var transaction: TransactionViewModel {
         model.transactionDetails
     }
 
-    @State
-    private var showsLink: Bool = false
-    private let padding: CGFloat = 11
-
-    var body: some View {
-        List {
-            if transactionViewModel is CreationTransactionViewModel {
-                CreationTransactionBodyView(transaction: transactionViewModel as! CreationTransactionViewModel)
-            } else {
-                detailsBodyView
-            }
-            
-            if transactionViewModel.browserURL != nil {
-                viewTxOnEtherscan
-            }
+    var displayConfirmations: Bool {
+        guard let transferTransaction = transaction as? TransferTransactionViewModel else {
+            return true
         }
-        .navigationBarTitle("Transaction Details", displayMode: .inline)
-        .onAppear {
-            self.trackEvent(.transactionsDetails)
-        }
-    }
 
-    var detailsBodyView: some View {
-        Group {
-            TransactionHeaderView(transaction: transactionViewModel)
-
-            if dataDecoded != nil {
-                TransactionActionView(dataDecoded: dataDecoded!)
-            }
-
-            if data != nil {
-                VStack (alignment: .leading) {
-                    Text("Data").headline()
-                    ExpandableButton(title: "\(data!.length) Bytes", value: data!.data)
-                }.padding(.vertical, padding)
-            }
-
-            TransactionStatusTypeView(transaction: transactionViewModel)
-
-            if displayConfirmations {
-                TransactionConfirmationsView(transaction: transactionViewModel, safe: model.safe).padding(.vertical, padding)
-            }
-
-            if transactionViewModel.formattedCreatedDate != nil {
-                KeyValueRow("Created:",
-                            value: transactionViewModel.formattedCreatedDate!,
-                            enableCopy: false,
-                            color: .gnoDarkGrey).padding(.vertical, padding)
-            }
-
-            if transactionViewModel.formattedExecutedDate != nil {
-                KeyValueRow("Executed:",
-                            value: transactionViewModel.formattedExecutedDate!,
-                            enableCopy: false,
-                            color: .gnoDarkGrey).padding(.vertical, padding)
-            }
-
-            if transactionViewModel.hasAdvancedDetails {
-                NavigationLink(
-                    destination: AdvancedTransactionDetailsView(transactionViewModel: transactionViewModel)
-                ) {
-                    Text("Advanced").body()                    
-                }
-                .frame(height: 48)
-            }
-        }
-    }
-
-    private var viewTxOnEtherscan: some View {
-        Button(action: { self.showsLink.toggle() }) {
-            LinkText(title: "View transaction on Etherscan")
-        }
-        .buttonStyle(BorderlessButtonStyle())
-        .foregroundColor(.gnoHold)
-        .sheet(isPresented: $showsLink, content: browseTransaction)
-        .padding(.vertical, padding)
-    }
-
-
-    private func browseTransaction() -> some View {
-        SafariViewController(url: transactionViewModel.browserURL!)
+        return transferTransaction.isOutgoing
     }
 
     private var data: (length: UInt256, data: String)? {
-        guard let customTransaction = transactionViewModel as? CustomTransactionViewModel,
+        guard let customTransaction = transaction as? CustomTransactionViewModel,
               let data = customTransaction.data else {
             return nil
         }
@@ -150,19 +52,52 @@ fileprivate struct TransactionDetailsBodyView: Loadable {
         return (length: customTransaction.dataLength, data: data)
     }
 
-    private var dataDecoded: DataDecoded? {
-        guard let customTransaction = transactionViewModel as? CustomTransactionViewModel else {
-            return nil
-        }
+    private let padding: CGFloat = 11
 
-        return customTransaction.dataDecoded
+    var body: some View {
+        List {
+            if transaction as? CreationTransactionViewModel == nil {
+                transactionDetailsBodyView
+            } else {
+                CreationTransactionBodyView(transaction: transaction as! CreationTransactionViewModel)
+            }
+        }
+        .navigationBarTitle("Transaction Details", displayMode: .inline)
+        .onAppear {
+            self.trackEvent(.transactionsDetails)
+        }
     }
 
-    private var displayConfirmations: Bool {
-        guard let transferTransaction = transactionViewModel as? TransferTransactionViewModel else {
-            return true
-        }
+    var transactionDetailsBodyView: some View {
+        Group {
+            TransactionHeaderView(transaction: transaction)
 
-        return transferTransaction.isOutgoing
+//            if data != nil {
+//                VStack (alignment: .leading) {
+//                    Text("Data").headline()
+//                    ExpandableButton(title: "\(data!.length) Bytes", value: data!.data)
+//                }.padding(.vertical, 11)
+//            }
+
+            TransactionStatusTypeView(transaction: transaction)
+//            if displayConfirmations {
+//                TransactionConfirmationsView(transaction: transaction, safe: model.safe!).padding(.vertical, padding)
+//            }
+
+//            if transaction.formattedCreatedDate != nil {
+//                KeyValueRow("Created:", value: transaction.formattedCreatedDate!, enableCopy: false, color: .gnoDarkGrey).padding(.vertical, padding)
+//            }
+//
+//            if transaction.formattedExecutedDate != nil {
+//                KeyValueRow("Executed:", value: transaction.formattedExecutedDate!, enableCopy: false, color: .gnoDarkGrey).padding(.vertical, padding)
+//            }
+//
+//            if transaction.hasAdvancedDetails {
+//                NavigationLink(destination: AdvancedTransactionDetailsView(transaction: transaction)) {
+//                    Text("Advanced").body()
+//                }
+//                .frame(height: 48)
+//            }
+        }
     }
 }
