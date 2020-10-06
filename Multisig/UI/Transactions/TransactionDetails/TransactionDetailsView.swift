@@ -8,7 +8,7 @@
 
 import SwiftUI
 
-struct TransactionDetailsView: Loadable {
+struct TransactionDetailsView: View {
     @ObservedObject
     var model: TransactionDetailsViewModel
     
@@ -27,8 +27,48 @@ struct TransactionDetailsView: Loadable {
         model = TransactionDetailsViewModel(hash: hash)
     }
 
-    @State
-    private var showsLink: Bool = false
+    var body: some View {
+        ZStack {
+            LoadableView(TransactionDetailsBodyView(model: model))
+        }
+        .navigationBarTitle("Transaction Details", displayMode: .inline)
+        .onAppear {
+            self.trackEvent(.transactionsDetails)
+        }
+    }
+
+    func browseTransaction() -> some View {
+        return SafariViewController(url: Transaction.browserURL(hash: transaction.hash!))
+    }
+}
+
+struct TransactionDetailsBodyView: Loadable {
+    @ObservedObject
+    var model: TransactionDetailsViewModel
+
+    @FetchRequest(fetchRequest: Safe.fetchRequest().selected())
+    var selectedSafe: FetchedResults<Safe>
+
+    var transaction: TransactionViewModel {
+        model.transaction!
+    }
+
+    var displayConfirmations: Bool {
+        guard let transferTransaction = transaction as? TransferTransactionViewModel else {
+            return true
+        }
+
+        return transferTransaction.isOutgoing
+    }
+
+    var data: (length: Int, data: String)? {
+        guard let customTransaction = transaction as? CustomTransactionViewModel else {
+            return nil
+        }
+
+        return (length: customTransaction.dataLength, data: customTransaction.data)
+    }
+
     private let padding: CGFloat = 11
 
     var body: some View {
@@ -37,16 +77,6 @@ struct TransactionDetailsView: Loadable {
                 transactionDetailsBodyView
             } else {
                 CreationTransactionBodyView(transaction: transaction as! CreationTransactionViewModel)
-            }
-            
-            if transaction.hash != nil {
-                Button(action: { self.showsLink.toggle() }) {
-                    LinkText(title: "View transaction on Etherscan")
-                }
-                .buttonStyle(BorderlessButtonStyle())
-                .foregroundColor(.gnoHold)
-                .sheet(isPresented: $showsLink, content: browseTransaction)
-                .padding(.vertical, padding)
             }
         }
         .navigationBarTitle("Transaction Details", displayMode: .inline)
@@ -86,25 +116,5 @@ struct TransactionDetailsView: Loadable {
                 .frame(height: 48)
             }
         }
-    }
-
-    func browseTransaction() -> some View {
-        return SafariViewController(url: Transaction.browserURL(hash: transaction.hash!))
-    }
-
-    var data: (length: Int, data: String)? {
-        guard let customTransaction = transaction as? CustomTransactionViewModel else {
-            return nil
-        }
-
-        return (length: customTransaction.dataLength, data: customTransaction.data)
-    }
-
-    var displayConfirmations: Bool {
-        guard let transferTransaction = transaction as? TransferTransactionViewModel else {
-            return true
-        }
-
-        return transferTransaction.isOutgoing
     }
 }
