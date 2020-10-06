@@ -37,27 +37,26 @@ struct SwitchSafeView: View {
             .onDisappear {
                 self.theme.setTemporaryTableViewBackground(nil)
             }
-            .navigationBarTitle("Switch Safes")
-            .navigationBarItems(trailing: closeButton)
+            .navigationBarTitle("", displayMode: .inline)
+            .navigationBarItems(leading: closeButton)
         }
     }
 
     var closeButton: some View {
-//        HStack(spacing: 0) {
+        HStack(spacing: 0) {
             Button(action: { self.presentationMode.wrappedValue.dismiss() }) {
-                Text("Done")
+                Image.bigXMark
             }
-            .buttonStyle(GNOPlainButtonStyle())
-//            .frameForTapping(alignment: .leading)
+            .frameForTapping(alignment: .leading)
 
-//            Text("Switch Safes")
-//                .headline()
-//                // otherwise the text is too far to the right
-//                .padding(.leading, -10)
+            Text("Switch Safes")
+                .headline()
+                // otherwise the text is too far to the right
+                .padding(.leading, -10)
 
-//            Spacer()
-//        }
-//        .frame(width: 140, height: 44, alignment: .leading)
+            Spacer()
+        }
+        .frameForNavigationBar()
     }
 }
 

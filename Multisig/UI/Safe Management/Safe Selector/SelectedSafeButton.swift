@@ -20,12 +20,23 @@ struct SelectedSafeButton: View {
             if selected.first == nil {
                 notSelectedView
             } else {
-                SafeCell1(safe: selected.first!, iconSize: iconSize)
+                SafeCell(safe: selected.first!)
             }
             Spacer()
         }
-        .frame(width: 170, height: 44, alignment: .leading)
+        .frameForNavigationBar()
         .disabled(selected.first == nil)
+
+//        Button(action: { self.showsSafeInfo.toggle() }) {
+//            if selected.first == nil {
+//                notSelectedView
+//            } else {
+//                SafeCell1(safe: selected.first!, iconSize: iconSize)
+//            }
+//            Spacer()
+//        }
+//        .frame(width: 170, height: 44, alignment: .leading)
+//        .disabled(selected.first == nil)
     }
 
     let iconSize: CGFloat = 36
@@ -66,7 +77,7 @@ struct SafeCell1: View {
 
                 if safe.safeAddress != nil {
                     SlicedText(safe.safeAddress!)
-                        .style(.addressShortLight, font: .gnoBody)
+                        .style(.addressShortLight)
                 }
             }
         }

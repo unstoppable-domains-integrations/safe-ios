@@ -24,23 +24,41 @@ struct MainContentView<Content: View>: View {
 
     var body: some View {
         NavigationView {
-//            VStack(spacing: 0) {
-//                SafeHeaderView(showsSafeInfo: $showsSafeInfo)
-//                    .frame(height: ScreenMetrics.safeHeaderHeight)
+            VStack(spacing: 0) {
+                SafeHeaderView(showsSafeInfo: $showsSafeInfo)
+                    .frame(height: ScreenMetrics.safeHeaderHeight)
 
-            content
-                .environment(\.managedObjectContext, self.context)
-                .navigationBarItems(leading: selectButton, trailing: switchButton)
-//            }
-//            .edgesIgnoringSafeArea(.top)
-        }
-        .navigationViewStyle(StackNavigationViewStyle())
-        .overlay(
-            PopupView(isPresented: $showsSafeInfo) {
-                SafeInfoView()
+                content
             }
-        )
-        .hostSnackbar()
+            .edgesIgnoringSafeArea(.top)
+            .navigationBarTitle("", displayMode: .inline)
+            .navigationBarHidden(true)
+            .overlay(
+                PopupView(isPresented: $showsSafeInfo) {
+                    SafeInfoView()
+                }
+            )
+            .hostSnackbar()
+        }
+
+//        NavigationView {
+////            VStack(spacing: 0) {
+////                SafeHeaderView(showsSafeInfo: $showsSafeInfo)
+////                    .frame(height: ScreenMetrics.safeHeaderHeight)
+//
+//            content
+//                .environment(\.managedObjectContext, self.context)
+//                .navigationBarItems(leading: selectButton, trailing: switchButton)
+////            }
+////            .edgesIgnoringSafeArea(.top)
+//        }
+//        .navigationViewStyle(StackNavigationViewStyle())
+//        .overlay(
+//            PopupView(isPresented: $showsSafeInfo) {
+//                SafeInfoView()
+//            }
+//        )
+//        .hostSnackbar()
     }
 
     var selectButton: some View {

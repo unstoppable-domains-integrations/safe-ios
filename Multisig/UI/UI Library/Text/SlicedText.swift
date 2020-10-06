@@ -12,7 +12,6 @@ struct SlicedText: View {
 
     var string: SlicedString
     var style: Style = .default
-    var font: Font = .gnoBody
 
     var truncated: SlicedString {
         string.truncated(in: style.truncate)
@@ -24,7 +23,7 @@ struct SlicedText: View {
             Text(truncated.middle).foregroundColor(style.middleColor) +
             Text(truncated.end).foregroundColor(style.endColor)
         )
-        .font(font)
+        .font(.gnoBody)
         .tracking(-0.41)
     }
 
@@ -37,8 +36,8 @@ struct SlicedText: View {
         typealias Truncation = SlicedString.Truncation
     }
 
-    func style(_ style: Style, font: Font = .gnoBody) -> Self {
-        .init(string: string, style: style, font: font)
+    func style(_ style: Style) -> Self {
+        .init(string: string, style: style)
     }
 
 }
