@@ -31,73 +31,21 @@ struct TransactionDetailsBodyView: Loadable {
     @ObservedObject
     var model: TransactionDetailsViewModel
 
-    var transaction: TransactionViewModel {
-        model.transactionDetails
-    }
-
-    var displayConfirmations: Bool {
-        guard let transferTransaction = transaction as? TransferTransactionViewModel else {
-            return true
-        }
-
-        return transferTransaction.isOutgoing
-    }
-
-    private var data: (length: UInt256, data: String)? {
-        guard let customTransaction = transaction as? CustomTransactionViewModel,
-              let data = customTransaction.data else {
-            return nil
-        }
-
-        return (length: customTransaction.dataLength, data: data)
-    }
-
-    private let padding: CGFloat = 11
+//    var transaction: TransactionViewModel {
+//        model.transactionDetails
+//    }
 
     var body: some View {
         List {
             if transaction as? CreationTransactionViewModel == nil {
                 transactionDetailsBodyView
-            } else {
-                CreationTransactionBodyView(transaction: transaction as! CreationTransactionViewModel)
             }
-        }
-        .navigationBarTitle("Transaction Details", displayMode: .inline)
-        .onAppear {
-            self.trackEvent(.transactionsDetails)
         }
     }
 
     var transactionDetailsBodyView: some View {
         Group {
-            TransactionHeaderView(transaction: transaction)
-
-//            if data != nil {
-//                VStack (alignment: .leading) {
-//                    Text("Data").headline()
-//                    ExpandableButton(title: "\(data!.length) Bytes", value: data!.data)
-//                }.padding(.vertical, 11)
-//            }
-
-            TransactionStatusTypeView(transaction: transaction)
-//            if displayConfirmations {
-//                TransactionConfirmationsView(transaction: transaction, safe: model.safe!).padding(.vertical, padding)
-//            }
-
-//            if transaction.formattedCreatedDate != nil {
-//                KeyValueRow("Created:", value: transaction.formattedCreatedDate!, enableCopy: false, color: .gnoDarkGrey).padding(.vertical, padding)
-//            }
-//
-//            if transaction.formattedExecutedDate != nil {
-//                KeyValueRow("Executed:", value: transaction.formattedExecutedDate!, enableCopy: false, color: .gnoDarkGrey).padding(.vertical, padding)
-//            }
-//
-//            if transaction.hasAdvancedDetails {
-//                NavigationLink(destination: AdvancedTransactionDetailsView(transaction: transaction)) {
-//                    Text("Advanced").body()
-//                }
-//                .frame(height: 48)
-//            }
+            TransactionStatusTypeView(transaction: model.transactionDetails)
         }
     }
 }

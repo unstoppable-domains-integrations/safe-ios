@@ -90,31 +90,4 @@ class TransactionDetailsViewModel: BasicLoadableViewModel {
             return try App.shared.clientGatewayService.transactionDetails(id: id!)
         }
     }
-
-    func sign() {
-        guard let transferTx = transactionDetails as? TransferTransactionViewModel,
-              let transaction = transferTx.transaction else {
-            assertionFailure("We have a technical problem. You need to restart the app.")
-            return
-        }
-        Just(safe.address!)
-            .receive(on: DispatchQueue.global())
-            .tryMap { address in
-                try App.shared.safeTransactionService.sign(transaction: transaction, safeAddress: Address(address)!)
-            }
-            .receive(on: RunLoop.main)
-            .sink(
-                receiveCompletion: { [weak self] completion in
-                    if case .failure(let error) = completion {
-                        App.shared.snackbar.show(message: error.localizedDescription)
-                        guard let `self` = self else { return }
-                        LogService.shared.error("Could not sign a transaction for safe: \(self.safe.address!)")
-                    }
-                },
-                receiveValue: { [weak self] _ in
-                    self?.reloadData()
-                }
-            )
-            .store(in: &subscribers)
-    }
 }
